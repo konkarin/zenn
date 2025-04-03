@@ -73,7 +73,7 @@ https://github.com/vuejs/core/blob/v3.5.13/packages/runtime-core/src/scheduler.t
 正しく理解するうえで、前提となる知識がいくつかあります。
 
 1. Promiseと`then`
-2. イベントループとタスク・マイクロタスク
+2. タスク・マイクロタスクとイベントループ
 3. Vueとマイクロタスクの関係
 
 それぞれ見ていきましょう！
@@ -108,13 +108,13 @@ p2.then((value) => {
 
 https://developer.mozilla.org/ja/docs/Web/JavaScript/Reference/Global_Objects/Promise/then#%E8%BF%94%E5%80%A4
 
-### イベントループとタスク・マイクロタスク
+### タスク・マイクロタスクとイベントループ
 
-次にイベントループとタスク・マイクロタスクです。あまり聞き慣れない人もいるかもしれませんが、これもJavaScriptにおける重要な仕組みです。
+次にタスク・マイクロタスクとイベントループです。あまり聞き慣れない人もいるかもしれませんが、これもJavaScriptにおける重要な仕組みです。
 
-- イベントループ：無限ループでJavaScriptエンジンはタスクを待機し、それらを実行し、また次のタスクを待機します。
-- タスク：`setTimeout()`、scriptタグの読み込み、イベントリスナーなど
+- タスク：`setTimeout()`、scriptタグの評価、イベントリスナーなど
 - マイクロタスク：`Promise.prototype.then()`, `queueMicrotask()` など
+- イベントループ：タスクとマイクロタスクをキューに入れて順番に処理するJavaScriptの反復処理
 
 https://developer.mozilla.org/ja/docs/Web/API/HTML_DOM_API/Microtask_guide#%E3%82%BF%E3%82%B9%E3%82%AF%E3%81%A8%E3%83%9E%E3%82%A4%E3%82%AF%E3%83%AD%E3%82%BF%E3%82%B9%E3%82%AF
 
@@ -143,9 +143,10 @@ console.log('d')
 
 この出力順は **a → d → c → b** です。
 
-JavaScriptのイベントループは **タスク → マイクロタスク → タスク → マイクロタスク → ...** の無限ループで実行されています。
-`setTimeout`は第二引数のミリ秒後に引数の関数のタスクを追加します。
-`then`はPromiseが解決された時にマイクロタスクを追加します。
+JavaScriptのイベントループは **タスク → マイクロタスク → タスク → マイクロタスク → ...** の無限ループで実行されている、と思ってください（厳密にはもうちょっと複雑です）。
+
+`setTimeout`は第二引数のミリ秒後に第一引数の関数をタスクとして追加します。
+`then`はPromiseが解決された時に引数の関数をマイクロタスクとして追加します。
 
 先程のサンプルコードをタスクとマイクロタスクに分けると以下のようになります。
 
@@ -193,7 +194,7 @@ console.log('e')
 
 この出力順は **a → e → c → d → b** です。
 
-マイクロタスクは、実行されているマイクロタスクが新たにマイクロタスクを追加した場合、次のタスクの実行前に追加されたマイクロタスクを実行します。これが`setTimeout`の引数の関数のよりも2つ目の`then`の引数の関数が先に実行される理由です。
+マイクロタスクは、実行されているマイクロタスクが新たにマイクロタスクを追加した場合、次のタスクの実行前に追加されたマイクロタスクを実行します。これが`setTimeout`の引数の関数のよりも**2つ目の`then`の引数の関数が先に実行される理由**です。
 
 分解すると以下のようになります。
 
@@ -224,7 +225,10 @@ console.log('e')
 つまり、**Task 1 → Microtask 1 → Microtask 2 → Task 2** の順番で実行されます。
 もし視覚的に理解したい場合は、[JS Visualizer 9000](https://www.jsv9000.app/?code=Ly8gPC0tIFRhc2sgMQpjb25zb2xlLmxvZygnYScpCgpzZXRUaW1lb3V0KCgpID0%2BIHsKICAvLyA8LS0gVGFzayAyCiAgY29uc29sZS5sb2coJ2InKQogIC8vIFRhc2sgMiAtLT4KfSwgMCkKClByb21pc2UucmVzb2x2ZSgpLnRoZW4oKCkgPT4gewogIC8vIDwtLSBNaWNyb3Rhc2sgMQogIGNvbnNvbGUubG9nKCdjJykKICAvLyBNaWNyb3Rhc2sgMSAtLT4KfSkudGhlbigoKSA9PiB7CiAgLy8gPC0tIE1pY3JvdGFzayAyCiAgY29uc29sZS5sb2coJ2QnKQogIC8vIE1pY3JvdGFzayAyIC0tPgp9KQoKY29uc29sZS5sb2coJ2UnKQovLyBUYXNrIDEgLS0%2B) がおすすめです。
 
-これでイベントループやタスク・マイクロタスクの仕組みをざっくりと理解できました。
+もっと詳しく理解したい方は以下の本がおすすめです。Chapter5と6あたりがここまでの話に近い内容です。
+https://zenn.dev/estra/books/js-async-promise-chain-event-loop
+
+ここまでで、タスク・マイクロタスクとイベントループの仕組みをざっくりと理解できました。
 
 
 ### Vueとマイクロタスク
@@ -236,7 +240,7 @@ console.log('e')
 https://ja.vuejs.org/guide/essentials/reactivity-fundamentals.html#dom-update-timing
 
 
-「同期的に適用されない＝非同期」ということです。この非同期とは、「マイクロタスクで実行される」と置き換えられるので、VueはマイクロタスクでDOMを更新しています。
+「同期的に適用されない＝非同期」ということです。この非同期とは、「マイクロタスクで実行される」と置き換えられるので、VueはマイクロタスクでDOMを更新していると言えます。
 つまり、マイクロタスクを理解すれば、どのタイミングでDOMが更新されるかわかりますね。
 
 例えば、`ref`が更新されるとマイクロタスクが一つ追加され、そのマイクロタスク内でDOMを更新します。
@@ -278,7 +282,7 @@ function ref(value) {
 
 この例は`ref`ですが、`reactive`などの他のリアクティビティAPIでも同様です。
 
-これでVueとマイクロタスクの関係を掴めました。
+ここまでで、Vueとマイクロタスクの関係を掴めました。
 
 ## `nextTick`を理解する
 
@@ -312,14 +316,14 @@ function queueFlush() {
 function queueFlush() {
   if (!currentFlushPromise) {
     // flushJobs ≒ DOM更新の関数
-    // thenはPromiseを返す。このPromiseはflushJobsが完了したら解決される。
+    // thenはPromiseを返す。このPromiseはflushJobsが実行完了したら解決される。
     currentFlushPromise = resolvedPromise.then(flushJobs)
   }
 }
 ```
 [https://github.com/vuejs/core/blob/v3.5.13/packages/runtime-core/src/scheduler.ts#L114-L118](https://github.com/vuejs/core/blob/v3.5.13/packages/runtime-core/src/scheduler.ts#L114-L118)
 
-そして`nextTick`は`currentFlushPromise` の解決後（＝DOM更新後）に、引数の関数を実行するマイクロタスクを追加します。これが`nextTick`がDOM更新を待つ仕組みになっています。
+そして`nextTick`は`currentFlushPromise`の解決後（つまりDOM更新完了後）に、引数の関数を実行するマイクロタスクを追加します。これが`nextTick`が**DOM更新を待つことができる仕組み**です。
 
 ```jsx:core/packages/runtime-core/src/scheduler.ts
 export function nextTick(fn) {
@@ -345,7 +349,7 @@ nextTick().then(() => {
 
 これで`nextTick`を理解できました！🥳
 
-最後に冒頭のコードを見てみましょう。
+では最後に、冒頭のコードを振り返ってみましょう。
 
 ```vue:App.vue
 <script setup>
