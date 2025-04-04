@@ -3,7 +3,8 @@ title: "nextTickを正しく理解する〜Vueとマイクロタスク〜"
 emoji: "⏰"
 type: "tech" # tech: 技術記事 / idea: アイデア
 topics: ["vue", "javascript"]
-published: false
+published: true
+published_at: 2025-04-04 12:00
 publication_name: comm_vue_nuxt
 ---
 
