@@ -90,12 +90,9 @@ PromiseはJavaScriptにおける非同期な振る舞いの基本的な概念で
 // p1は解決済みのPromise
 const p1 = Promise.resolve()
 
-// p2は1秒後に解決されるPromise
-const p2 = p1.then(() => {
-  const startTime = Date.now();
-  
-  while (Date.now() - startTime < 1000) {} // 1秒間ループ
-  
+// p2は約1秒後に解決されるPromise
+const p2 = p1.then(async () => {
+  await new Promise(resolve => setTimeout(resolve, 1000)); // 約1秒間待機する
   return 'done!'
 })
 
