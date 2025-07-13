@@ -5,6 +5,7 @@
     "preview": "npx zenn preview"
   },
   "dependencies": {
+    "prettier": "^3.6.2",
     "zenn-cli": "^0.1.158"
   }
 }
