@@ -16,10 +16,10 @@ publication_name: "comm_vue_nuxt"
 
 ### 注意事項
 
--本記事はVue3.5.17で検証しています。
--VueのCSRの知識がある前提で書いています。
--ハイドレーションの処理の概要の理解を目指しているので、細かい処理は一部除外しています。
--すでにハイドレーションを知っていて、更に詳しくなりたい場合は、本記事よりも[Vueのリポジトリ](https://github.com/vuejs/core)を直接覗くか、[DeepWikiのVueハイドレーション解説](https://deepwiki.com/vuejs/core/6.2-hydration)にも詳細が書かれているので、そちらがおすすめです。
+- 本記事はVue 3.5.17で検証しています。
+- VueのCSRの知識がある前提で書いています。
+- ハイドレーションの処理の概要の理解を目指しているので、細かい処理は一部除外しています。
+- すでにハイドレーションを知っていて、更に詳しくなりたい場合は、本記事よりも[Vueのリポジトリ](https://github.com/vuejs/core)を直接覗くか、[DeepWikiのVueハイドレーション解説](https://deepwiki.com/vuejs/core/6.2-hydration)にも詳細が書かれているので、そちらがおすすめです。
 
 :::
 
